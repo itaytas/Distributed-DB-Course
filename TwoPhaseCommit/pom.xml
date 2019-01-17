@@ -8,10 +8,10 @@
 		<version>2.1.2.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.twoPhaseCommit</groupId>
-	<artifactId>Distrubted-DB-Course</artifactId>
+	<groupId>com.app</groupId>
+	<artifactId>TwoPhaseCommit</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Distrubted-DB-Course</name>
+	<name>TwoPhaseCommit</name>
 	<description>Demo project for Spring Boot</description>
 
 	<properties>

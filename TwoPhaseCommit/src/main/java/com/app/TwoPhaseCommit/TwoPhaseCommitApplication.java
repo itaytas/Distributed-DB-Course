@@ -1,13 +1,13 @@
-package com.twoPhaseCommit.DistrubtedDBCourse;
+package com.app.TwoPhaseCommit;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class DistrubtedDbCourseApplication {
+public class TwoPhaseCommitApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(DistrubtedDbCourseApplication.class, args);
+		SpringApplication.run(TwoPhaseCommitApplication.class, args);
 	}
 
 }
