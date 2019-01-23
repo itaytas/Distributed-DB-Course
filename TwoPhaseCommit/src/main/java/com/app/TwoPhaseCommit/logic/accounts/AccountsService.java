@@ -10,7 +10,7 @@ public interface AccountsService {
 	public void cleanup();
 	
 	public List<AccountEntity> getAllAccounts();
-	
+		
 	public Object createNewAccount(AccountEntity accountEntity) throws Exception;
 	
 	public AccountEntity getAccountById(String username) throws AccountNotFoundException;
@@ -20,5 +20,5 @@ public interface AccountsService {
     public Object updateBalanceAndPullFromPendingTransactions(String username, int amount, String transactionId);
     
     public Object updatePullFromPendingTransactions(String username, String transactionId);
-    
+
 }

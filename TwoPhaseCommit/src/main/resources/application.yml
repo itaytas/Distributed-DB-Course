@@ -28,7 +28,7 @@ mongodb:
     host: localhost
     port: 27017
     database: distributedDB
-  replica:
+  secondary:
     host: localhost
     port: 27017
     database: distributedDB

@@ -2,8 +2,6 @@ package com.app.TwoPhaseCommit.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,7 +17,7 @@ public class AccountsRestConroller {
 	public void setAccounts(AccountsService accountsService) {
 		this.accountsService = accountsService;
 	}
-
+	
 	@RequestMapping(
 			method=RequestMethod.GET,
 			path="/accounts",
@@ -28,4 +26,5 @@ public class AccountsRestConroller {
 	public Object addNewActivity() throws Exception {	    	
 		return this.accountsService.getAllAccounts();
 	}
+	
 }

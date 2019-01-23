@@ -1,5 +1,6 @@
 package com.app.TwoPhaseCommit.logic.accounts;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.persistence.Id;
@@ -10,20 +11,18 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class AccountEntity {
 
 	private String username;
-	private long balance;
-	private Object[] pendingTransactions;
+	private double balance;
+	private ArrayList<Object> pendingTransactions;
 
 	public AccountEntity() {
 	}
 
-	public AccountEntity(String username, long balance, Object[] pendingTransactions) {
-		super();
+	public AccountEntity(String username, double balance, ArrayList<Object> pendingTransactions) {
 		this.username = username;
 		this.balance = balance;
 		this.pendingTransactions = pendingTransactions;
 	}
 
-	@Id
 	public String getUsername() {
 		return username;
 	}
@@ -32,33 +31,47 @@ public class AccountEntity {
 		this.username = username;
 	}
 
-	public long getBalance() {
+	public double getBalance() {
 		return balance;
 	}
 
-	public void setBalance(long balance) {
+	public void setBalance(double balance) {
 		this.balance = balance;
 	}
 
-	public Object[] getPendingTransactions() {
+	public ArrayList<Object> getPendingTransactions() {
 		return pendingTransactions;
 	}
 
-	public void setPendingTransactions(Object[] pendingTransactions) {
+	public void setPendingTransactions(ArrayList<Object> pendingTransactions) {
 		this.pendingTransactions = pendingTransactions;
+	}
+	
+	public void addToPendingTransactions(Object pendingTransaction) {
+		this.pendingTransactions.add(pendingTransaction);
+	}
+	
+	public void removePendingTransaction(Object pendingTransaction) {
+		if (this.pendingTransactions.contains(pendingTransaction)) {
+			this.pendingTransactions.remove(pendingTransaction);
+		}
 	}
 
 	@Override
 	public String toString() {
-		return "Account [balance=" + balance + ", pendingTransactions=" + Arrays.toString(pendingTransactions) + "]";
+		return "AccountEntity [username=" + username + ", balance=" + balance + ", pendingTransactions="
+				+ pendingTransactions + "]";
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (int) (balance ^ (balance >>> 32));
-		result = prime * result + Arrays.deepHashCode(pendingTransactions);
+		long temp;
+		temp = Double.doubleToLongBits(balance);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((pendingTransactions == null) ? 0 : pendingTransactions.hashCode());
+		result = prime * result + ((username == null) ? 0 : username.hashCode());
 		return result;
 	}
 
@@ -71,9 +84,17 @@ public class AccountEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		AccountEntity other = (AccountEntity) obj;
-		if (balance != other.balance)
+		if (Double.doubleToLongBits(balance) != Double.doubleToLongBits(other.balance))
 			return false;
-		if (!Arrays.deepEquals(pendingTransactions, other.pendingTransactions))
+		if (pendingTransactions == null) {
+			if (other.pendingTransactions != null)
+				return false;
+		} else if (!pendingTransactions.equals(other.pendingTransactions))
+			return false;
+		if (username == null) {
+			if (other.username != null)
+				return false;
+		} else if (!username.equals(other.username))
 			return false;
 		return true;
 	}
