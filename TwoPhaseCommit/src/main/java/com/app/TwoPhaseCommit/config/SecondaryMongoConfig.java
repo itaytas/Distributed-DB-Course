@@ -8,7 +8,7 @@ import static com.app.TwoPhaseCommit.config.SecondaryMongoConfig.MONGO_TEMPLATE;
 
 @Configuration
 @EnableMongoRepositories(
-		basePackages = "com.app.TwoPhaseCommit.dal.AccountsSecondaryDao",
+		basePackages = "com.app.TwoPhaseCommit.dal.secondary",
         mongoTemplateRef = MONGO_TEMPLATE)
 public class SecondaryMongoConfig {
 

@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.app.TwoPhaseCommit.dal.AccountsPrimaryDao;
-import com.app.TwoPhaseCommit.dal.AccountsSecondaryDao;
+import com.app.TwoPhaseCommit.dal.primary.AccountsPrimaryDao;
+import com.app.TwoPhaseCommit.dal.secondary.AccountsSecondaryDao;
 import com.app.TwoPhaseCommit.logic.accounts.AccountEntity;
 import com.app.TwoPhaseCommit.logic.accounts.AccountsService;
 import com.app.TwoPhaseCommit.logic.accounts.exceptions.AccountAlreadyExistsException;
@@ -20,14 +19,11 @@ public class JpaAccountsService implements AccountsService {
 
 	private AccountsPrimaryDao accountsPrimaryDao;
 	private AccountsSecondaryDao accountsSecondaryDao;
-//	private ApplicationContext spring;
 
 	@Autowired
-	public JpaAccountsService(AccountsPrimaryDao accountsPrimaryDao, AccountsSecondaryDao accountsSecondaryDao,
-			ApplicationContext spring) {
+	public JpaAccountsService(AccountsPrimaryDao accountsPrimaryDao, AccountsSecondaryDao accountsSecondaryDao) {
 		this.accountsPrimaryDao = accountsPrimaryDao;
 		this.accountsSecondaryDao = accountsSecondaryDao;
-//		this.spring = spring;
 	}
 
 	@Override
@@ -59,7 +55,7 @@ public class JpaAccountsService implements AccountsService {
 				break;
 			} catch (Exception e) {
 				e.printStackTrace();
-				System.out.println("Error in save account in Secondary DB, aborting saving and retrying ...");
+				System.out.println("Error in saving account in Secondary DB, aborting saving and retrying ...");
 			}
 		}
 
@@ -96,7 +92,7 @@ public class JpaAccountsService implements AccountsService {
 				break;
 			} catch (Exception e) {
 				e.printStackTrace();
-				System.out.println("Error in save account in Secondary DB, aborting saving and retrying ...");
+				System.out.println("Error in saving account in Secondary DB, aborting saving and retrying ...");
 			}
 		}
 
@@ -123,7 +119,7 @@ public class JpaAccountsService implements AccountsService {
 				break;
 			} catch (Exception e) {
 				e.printStackTrace();
-				System.out.println("Error in save account in Secondary DB, aborting saving and retrying ...");
+				System.out.println("Error in saving account in Secondary DB, aborting saving and retrying ...");
 			}
 		}
 
@@ -149,7 +145,7 @@ public class JpaAccountsService implements AccountsService {
 				break;
 			} catch (Exception e) {
 				e.printStackTrace();
-				System.out.println("Error in save account in Secondary DB, aborting saving and retrying ...");
+				System.out.println("Error in saving account in Secondary DB, aborting saving and retrying ...");
 			}
 		}
 

@@ -1,4 +1,4 @@
-package com.app.TwoPhaseCommit.dal;
+package com.app.TwoPhaseCommit.dal.primary;
 
 import java.util.List;
 

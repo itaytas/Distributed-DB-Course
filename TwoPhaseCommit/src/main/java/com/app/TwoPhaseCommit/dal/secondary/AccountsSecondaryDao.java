@@ -1,4 +1,4 @@
-package com.app.TwoPhaseCommit.dal;
+package com.app.TwoPhaseCommit.dal.secondary;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 

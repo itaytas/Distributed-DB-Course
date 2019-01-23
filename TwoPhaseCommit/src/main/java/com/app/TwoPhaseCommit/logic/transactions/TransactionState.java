@@ -1,4 +1,4 @@
-package com.app.TwoPhaseCommit.logic;
+package com.app.TwoPhaseCommit.logic.transactions;
 
 /**
  * Successful Flow

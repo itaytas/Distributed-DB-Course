@@ -1,20 +1,34 @@
-package com.app.TwoPhaseCommit.logic;
+package com.app.TwoPhaseCommit.logic.transactions;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-public class Transaction {
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document(collection = "Transactions")
+public class TransactionEntity {
 
 	private String id;
 	private String source;
 	private String destination;
-	private int value;
+	private double value;
 	private TransactionState state;
 	private long lastModified;
 
-	public Transaction() {
+	public TransactionEntity() {
+	}
+
+	public TransactionEntity(String source, String destination, double value, TransactionState state, long lastModified) {
+		this.source = source;
+		this.destination = destination;
+		this.value = value;
+		this.state = state;
+		this.lastModified = lastModified;
 	}
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	public String getId() {
 		return id;
 	}
@@ -39,20 +53,12 @@ public class Transaction {
 		this.destination = destination;
 	}
 
-	public int getValue() {
+	public double getValue() {
 		return value;
 	}
 
-	public void setValue(int value) {
+	public void setValue(double value) {
 		this.value = value;
-	}
-
-	public long getLastModified() {
-		return lastModified;
-	}
-
-	public void setLastModified(long lastModified) {
-		this.lastModified = lastModified;
 	}
 
 	public TransactionState getState() {
@@ -61,6 +67,14 @@ public class Transaction {
 
 	public void setState(TransactionState state) {
 		this.state = state;
+	}
+
+	public long getLastModified() {
+		return lastModified;
+	}
+
+	public void setLastModified(long lastModified) {
+		this.lastModified = lastModified;
 	}
 
 	@Override
@@ -78,7 +92,9 @@ public class Transaction {
 		result = prime * result + (int) (lastModified ^ (lastModified >>> 32));
 		result = prime * result + ((source == null) ? 0 : source.hashCode());
 		result = prime * result + ((state == null) ? 0 : state.hashCode());
-		result = prime * result + value;
+		long temp;
+		temp = Double.doubleToLongBits(value);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
 
@@ -90,7 +106,7 @@ public class Transaction {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Transaction other = (Transaction) obj;
+		TransactionEntity other = (TransactionEntity) obj;
 		if (destination == null) {
 			if (other.destination != null)
 				return false;
@@ -110,8 +126,9 @@ public class Transaction {
 			return false;
 		if (state != other.state)
 			return false;
-		if (value != other.value)
+		if (Double.doubleToLongBits(value) != Double.doubleToLongBits(other.value))
 			return false;
 		return true;
 	}
+
 }
