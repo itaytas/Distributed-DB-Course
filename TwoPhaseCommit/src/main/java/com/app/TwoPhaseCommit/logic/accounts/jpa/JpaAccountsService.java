@@ -74,7 +74,7 @@ public class JpaAccountsService implements AccountsService {
 
 	@Override
 	@Transactional
-	public Object updateBalanceAndPushToPendingTransactions(String username, int amount, String transactionId) {
+	public Object updateBalanceAndPushToPendingTransactions(String username, double amount, String transactionId) {
 		AccountEntity accountEntity;
 		try {
 			accountEntity = getAccountById(username);
@@ -101,7 +101,7 @@ public class JpaAccountsService implements AccountsService {
 
 	@Override
 	@Transactional
-	public Object updateBalanceAndPullFromPendingTransactions(String username, int amount, String transactionId) {
+	public Object updateBalanceAndPullFromPendingTransactions(String username, double amount, String transactionId) {
 		AccountEntity accountEntity;
 		try {
 			accountEntity = getAccountById(username);
