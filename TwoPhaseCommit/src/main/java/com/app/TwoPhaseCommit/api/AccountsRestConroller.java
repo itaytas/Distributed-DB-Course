@@ -10,13 +10,14 @@ import com.app.TwoPhaseCommit.logic.accounts.AccountsService;
 
 @RestController
 public class AccountsRestConroller {
-
-	private AccountsService accountsService;
 	
 	@Autowired
-	public void setAccounts(AccountsService accountsService) {
-		this.accountsService = accountsService;
-	}
+	private AccountsService accountsService;
+	
+	
+//	public void setAccounts(AccountsService accountsService) {
+//		this.accountsService = accountsService;
+//	}
 	
 	@RequestMapping(
 			method=RequestMethod.GET,

@@ -3,6 +3,7 @@ package com.app.TwoPhaseCommit.logic.transactions.jpa;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.app.TwoPhaseCommit.dal.primary.TransactionPrimaryDao;
@@ -12,6 +13,7 @@ import com.app.TwoPhaseCommit.logic.transactions.TransactionService;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionState;
 import com.app.TwoPhaseCommit.logic.transactions.exceptions.TransactionNotFoundException;
 
+@Service
 public class JpaTransactionService implements TransactionService {
 
 	private TransactionPrimaryDao transactionPrimaryDao;

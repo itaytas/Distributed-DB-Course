@@ -3,7 +3,8 @@ package com.app.TwoPhaseCommit.logic.accounts;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import javax.persistence.Id;
+//import javax.persistence.Id;
+import org.springframework.data.annotation.Id;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -22,7 +23,8 @@ public class AccountEntity {
 		this.balance = balance;
 		this.pendingTransactions = pendingTransactions;
 	}
-
+	
+	@Id
 	public String getUsername() {
 		return username;
 	}

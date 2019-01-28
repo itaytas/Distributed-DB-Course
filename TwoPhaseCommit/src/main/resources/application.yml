@@ -22,14 +22,12 @@ logging:
             sql:  
               BasicBinder: TRACE
 
-  
 mongodb:
   primary:
     host: localhost
     port: 27017
-    database: distributedDB
+    database: primary
   secondary:
     host: localhost
-    port: 27017
-    database: distributedDB
-    
+    port: 27018
+    database: replica

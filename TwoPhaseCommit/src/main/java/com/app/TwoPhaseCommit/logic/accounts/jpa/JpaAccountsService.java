@@ -2,6 +2,7 @@ package com.app.TwoPhaseCommit.logic.accounts.jpa;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,14 +18,16 @@ import com.app.TwoPhaseCommit.logic.accounts.exceptions.AccountNotFoundException
 @Service
 public class JpaAccountsService implements AccountsService {
 
+	@Autowired
 	private AccountsPrimaryDao accountsPrimaryDao;
+	@Autowired
 	private AccountsSecondaryDao accountsSecondaryDao;
 
-	@Autowired
-	public JpaAccountsService(AccountsPrimaryDao accountsPrimaryDao, AccountsSecondaryDao accountsSecondaryDao) {
-		this.accountsPrimaryDao = accountsPrimaryDao;
-		this.accountsSecondaryDao = accountsSecondaryDao;
-	}
+//	@Autowired
+//	public JpaAccountsService(AccountsPrimaryDao accountsPrimaryDao, AccountsSecondaryDao accountsSecondaryDao) {
+//		this.accountsPrimaryDao = accountsPrimaryDao;
+//		this.accountsSecondaryDao = accountsSecondaryDao;
+//	}
 
 	@Override
 	@Transactional
@@ -44,32 +47,34 @@ public class JpaAccountsService implements AccountsService {
 	@Override
 	@Transactional
 	public Object createNewAccount(AccountEntity accountEntity) throws Exception {
-		if (this.accountsPrimaryDao.findAccountById(accountEntity.getUsername()).size() != 0) {
+		Optional<AccountEntity> op = this.accountsPrimaryDao.findById(accountEntity.getUsername());
+		if (op.isPresent()) {
 			throw new AccountAlreadyExistsException(
 					"There is already an account with username: " + accountEntity.getUsername());
-		}
-
-		while (true) {
-			try {
-				this.accountsSecondaryDao.save(accountEntity);
-				break;
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println("Error in saving account in Secondary DB, aborting saving and retrying ...");
+		} else {
+			while (true) {
+				try {
+					this.accountsSecondaryDao.save(accountEntity);
+					break;
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.out.println("Error in saving account in Secondary DB, aborting saving and retrying ...");
+				}
 			}
-		}
 
-		return this.accountsPrimaryDao.save(accountEntity);
+			return this.accountsPrimaryDao.save(accountEntity);
+		}
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public AccountEntity getAccountById(String username) throws AccountNotFoundException {
-		List<AccountEntity> accounts = this.accountsPrimaryDao.findAccountById(username);
-		if (accounts.size() == 0) {
-			throw new AccountNotFoundException("There is no account with username: " + username);
+		Optional<AccountEntity> op = this.accountsPrimaryDao.findById(username);
+		if (!op.isPresent()) {
+			throw new AccountNotFoundException(
+					"Not found an account with username: " + username);
 		}
-		return (AccountEntity) accounts.toArray()[0];
+		return op.get();
 	}
 
 	@Override
