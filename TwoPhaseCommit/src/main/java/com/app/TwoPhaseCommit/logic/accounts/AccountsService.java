@@ -15,6 +15,8 @@ public interface AccountsService {
 	
 	public AccountEntity getAccountById(String username) throws AccountNotFoundException;
 	
+	public boolean isAccountExists(String username);
+	
 	public Object updateBalanceAndPushToPendingTransactions(String username, double amount, String transactionId);
 
     public Object updateBalanceAndPullFromPendingTransactions(String username, double amount, String transactionId);

@@ -76,6 +76,13 @@ public class JpaAccountsService implements AccountsService {
 		}
 		return op.get();
 	}
+	
+	
+	@Override
+	public boolean isAccountExists(String username) {
+		Optional<AccountEntity> op = this.accountsPrimaryDao.findById(username);
+		return op.isPresent();
+	}
 
 	@Override
 	@Transactional

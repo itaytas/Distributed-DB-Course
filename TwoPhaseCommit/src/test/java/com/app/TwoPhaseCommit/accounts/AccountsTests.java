@@ -24,6 +24,7 @@ import com.app.TwoPhaseCommit.dal.primary.AccountsPrimaryDao;
 import com.app.TwoPhaseCommit.dal.secondary.AccountsSecondaryDao;
 import com.app.TwoPhaseCommit.logic.accounts.AccountEntity;
 import com.app.TwoPhaseCommit.logic.accounts.AccountsService;
+import com.app.TwoPhaseCommit.logic.accounts.exceptions.AccountAlreadyExistsException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringRunner.class)
@@ -90,6 +91,21 @@ public class AccountsTests {
 		AccountTO expectedTO1 = new AccountTO("username1", 100.0, null);
 		this.accountsService.createNewAccount(expectedTO1.toEntity());
 		AccountTO expectedTO2 = new AccountTO("username2", 200.0, null);
+		this.accountsService.createNewAccount(expectedTO2.toEntity());
+
+		AccountTO[] accountsList = this.restTemplate.getForObject(this.url, AccountTO[].class);
+
+		assertThat(accountsList).contains(expectedTO1, expectedTO2);
+	}
+	
+	@Test
+	public void testCreateTwoUsersWithSameUsername() throws Exception {
+		AccountTO expectedTO1 = new AccountTO("username1", 100.0, null);
+		this.accountsService.createNewAccount(expectedTO1.toEntity());
+		
+		this.exception.expect(AccountAlreadyExistsException.class);
+		
+		AccountTO expectedTO2 = new AccountTO("username1", 200.0, null);
 		this.accountsService.createNewAccount(expectedTO2.toEntity());
 
 		AccountTO[] accountsList = this.restTemplate.getForObject(this.url, AccountTO[].class);

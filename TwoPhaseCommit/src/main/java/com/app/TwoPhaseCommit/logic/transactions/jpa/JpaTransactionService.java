@@ -8,6 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.app.TwoPhaseCommit.dal.primary.TransactionPrimaryDao;
 import com.app.TwoPhaseCommit.dal.secondary.TransactionSecondaryDao;
+import com.app.TwoPhaseCommit.logic.accounts.AccountsService;
+import com.app.TwoPhaseCommit.logic.accounts.exceptions.AccountNotFoundException;
+import com.app.TwoPhaseCommit.logic.transaction.exceptionss.jpa.InvalidMoneyAmountException;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionEntity;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionService;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionState;
@@ -18,12 +21,15 @@ public class JpaTransactionService implements TransactionService {
 
 	private TransactionPrimaryDao transactionPrimaryDao;
 	private TransactionSecondaryDao transactionSecondaryDao;
+	private AccountsService accountsService;
 
 	@Autowired
 	public JpaTransactionService(TransactionPrimaryDao transactionPrimaryDao,
-			TransactionSecondaryDao transactionSecondaryDao) {
+			TransactionSecondaryDao transactionSecondaryDao, 
+			AccountsService accountsService) {
 		this.transactionPrimaryDao = transactionPrimaryDao;
 		this.transactionSecondaryDao = transactionSecondaryDao;
+		this.accountsService = accountsService;
 	}
 
 	@Override
@@ -36,7 +42,20 @@ public class JpaTransactionService implements TransactionService {
 	@Override
 	@Transactional
 	public TransactionEntity createNewTransaction(String source, String destination, double value,
-			TransactionState state) {
+			TransactionState state) throws AccountNotFoundException, InvalidMoneyAmountException {
+		
+		if (!this.accountsService.isAccountExists(source)) {
+			throw new AccountNotFoundException("There is no Account with username: " + source);
+		}
+		
+		if (!this.accountsService.isAccountExists(destination)) {
+			throw new AccountNotFoundException("There is no Account with username: " + destination);
+		}
+		
+		if (value < 0) {
+			throw new InvalidMoneyAmountException("You can't transfer negative amount of money: " + value);
+		}
+		
 		TransactionEntity transactionEntity = new TransactionEntity(source, destination, value, state, System.currentTimeMillis());
 
 		tryToSaveEntityToSecondary(transactionEntity);
@@ -53,8 +72,7 @@ public class JpaTransactionService implements TransactionService {
 		}
 		return (TransactionEntity) transactions.toArray()[0];
 	}
-	
-	
+		
 	@Override
 	@Transactional
 	public TransactionEntity updateStateOfTransaction(String transactionId, TransactionState fromState, TransactionState toState) {
@@ -73,15 +91,12 @@ public class JpaTransactionService implements TransactionService {
 		return this.transactionPrimaryDao.save(transactionEntity);
 	}
 
-	
-
 	@Override
 	@Transactional(readOnly = true)
 	public TransactionEntity findTransactionByStateAndLastModified(TransactionState state) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
 	
 	private void tryToSaveEntityToSecondary(TransactionEntity transactionEntity) {
 		while (true) {

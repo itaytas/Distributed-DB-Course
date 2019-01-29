@@ -1,5 +1,7 @@
 package com.app.TwoPhaseCommit.logic.transactions;
 
+import com.app.TwoPhaseCommit.logic.accounts.exceptions.AccountNotFoundException;
+import com.app.TwoPhaseCommit.logic.transaction.exceptionss.jpa.InvalidMoneyAmountException;
 import com.app.TwoPhaseCommit.logic.transactions.exceptions.TransactionNotFoundException;
 
 public interface TransactionService {
@@ -10,7 +12,7 @@ public interface TransactionService {
 			String source,
 			String destination,
 			double value,
-			TransactionState state);
+			TransactionState state) throws AccountNotFoundException, InvalidMoneyAmountException;
 
     public TransactionEntity updateStateOfTransaction(
     		String transactionId,
