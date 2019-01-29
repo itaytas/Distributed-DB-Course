@@ -11,7 +11,7 @@ public interface AccountsService {
 	
 	public List<AccountEntity> getAllAccounts();
 		
-	public Object createNewAccount(AccountEntity accountEntity) throws Exception;
+	public AccountEntity createNewAccount(AccountEntity accountEntity) throws Exception;
 	
 	public AccountEntity getAccountById(String username) throws AccountNotFoundException;
 	

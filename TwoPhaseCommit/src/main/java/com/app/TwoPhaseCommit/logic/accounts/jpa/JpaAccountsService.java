@@ -18,16 +18,16 @@ import com.app.TwoPhaseCommit.logic.accounts.exceptions.AccountNotFoundException
 @Service
 public class JpaAccountsService implements AccountsService {
 
-	@Autowired
+//	@Autowired
 	private AccountsPrimaryDao accountsPrimaryDao;
-	@Autowired
+//	@Autowired
 	private AccountsSecondaryDao accountsSecondaryDao;
 
-//	@Autowired
-//	public JpaAccountsService(AccountsPrimaryDao accountsPrimaryDao, AccountsSecondaryDao accountsSecondaryDao) {
-//		this.accountsPrimaryDao = accountsPrimaryDao;
-//		this.accountsSecondaryDao = accountsSecondaryDao;
-//	}
+	@Autowired
+	public JpaAccountsService(AccountsPrimaryDao accountsPrimaryDao, AccountsSecondaryDao accountsSecondaryDao) {
+		this.accountsPrimaryDao = accountsPrimaryDao;
+		this.accountsSecondaryDao = accountsSecondaryDao;
+	}
 
 	@Override
 	@Transactional
@@ -46,7 +46,7 @@ public class JpaAccountsService implements AccountsService {
 
 	@Override
 	@Transactional
-	public Object createNewAccount(AccountEntity accountEntity) throws Exception {
+	public AccountEntity createNewAccount(AccountEntity accountEntity) throws Exception {
 		Optional<AccountEntity> op = this.accountsPrimaryDao.findById(accountEntity.getUsername());
 		if (op.isPresent()) {
 			throw new AccountAlreadyExistsException(
