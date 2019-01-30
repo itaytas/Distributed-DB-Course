@@ -14,13 +14,16 @@ import com.app.TwoPhaseCommit.logic.accounts.AccountEntity;
 import com.app.TwoPhaseCommit.logic.accounts.AccountsService;
 import com.app.TwoPhaseCommit.logic.accounts.exceptions.AccountAlreadyExistsException;
 import com.app.TwoPhaseCommit.logic.accounts.exceptions.AccountNotFoundException;
+import com.app.TwoPhaseCommit.logic.accounts.exceptions.SavingAccountToSecondaryFailedException;
+import com.app.TwoPhaseCommit.logic.transactions.TransactionEntity;
+import com.app.TwoPhaseCommit.logic.transactions.exceptions.SavingTransactionToSecondaryFailedException;
 
 @Service
 public class JpaAccountsService implements AccountsService {
-
-//	@Autowired
+	
+	private int NUM_OF_TRYING_TO_SAVE_TO_DB = 5;
+	
 	private AccountsPrimaryDao accountsPrimaryDao;
-//	@Autowired
 	private AccountsSecondaryDao accountsSecondaryDao;
 
 	@Autowired
@@ -47,19 +50,14 @@ public class JpaAccountsService implements AccountsService {
 	@Override
 	@Transactional
 	public AccountEntity createNewAccount(AccountEntity accountEntity) throws Exception {
-		Optional<AccountEntity> op = this.accountsPrimaryDao.findById(accountEntity.getUsername());
-		if (op.isPresent()) {
+		if (isAccountExists(accountEntity.getUsername())) {
 			throw new AccountAlreadyExistsException(
 					"There is already an account with username: " + accountEntity.getUsername());
 		} else {
-			while (true) {
-				try {
-					this.accountsSecondaryDao.save(accountEntity);
-					break;
-				} catch (Exception e) {
-					e.printStackTrace();
-					System.out.println("Error in saving account in Secondary DB, aborting saving and retrying ...");
-				}
+			boolean saveSuccessed = tryToSaveAccountToSecondary(accountEntity);
+			
+			if(!saveSuccessed) {
+				throw new SavingAccountToSecondaryFailedException("Failed to save account to Scondary DB:" + accountEntity.toString());
 			}
 
 			return this.accountsPrimaryDao.save(accountEntity);
@@ -77,7 +75,6 @@ public class JpaAccountsService implements AccountsService {
 		return op.get();
 	}
 	
-	
 	@Override
 	public boolean isAccountExists(String username) {
 		Optional<AccountEntity> op = this.accountsPrimaryDao.findById(username);
@@ -86,26 +83,17 @@ public class JpaAccountsService implements AccountsService {
 
 	@Override
 	@Transactional
-	public Object updateBalanceAndPushToPendingTransactions(String username, double amount, String transactionId) {
-		AccountEntity accountEntity;
-		try {
-			accountEntity = getAccountById(username);
-		} catch (AccountNotFoundException e) {
-			e.printStackTrace();
-			return null;
-		}
+	public Object updateBalanceAndPushToPendingTransactions(String username, double amount, String transactionId) throws Exception {
+		AccountEntity accountEntity= getAccountById(username);
+		
 
 		accountEntity.setBalance(accountEntity.getBalance() + amount);
 		accountEntity.addToPendingTransactions(transactionId);
 
-		while (true) {
-			try {
-				this.accountsSecondaryDao.save(accountEntity);
-				break;
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println("Error in saving account in Secondary DB, aborting saving and retrying ...");
-			}
+		boolean saveSuccessed = tryToSaveAccountToSecondary(accountEntity);
+		
+		if(!saveSuccessed) {
+			throw new SavingAccountToSecondaryFailedException("Failed to save account to Scondary DB:" + accountEntity.toString());
 		}
 
 		return this.accountsPrimaryDao.save(accountEntity);
@@ -113,26 +101,17 @@ public class JpaAccountsService implements AccountsService {
 
 	@Override
 	@Transactional
-	public Object updateBalanceAndPullFromPendingTransactions(String username, double amount, String transactionId) {
-		AccountEntity accountEntity;
-		try {
-			accountEntity = getAccountById(username);
-		} catch (AccountNotFoundException e) {
-			e.printStackTrace();
-			return null;
-		}
+	public Object updateBalanceAndPullFromPendingTransactions(String username, double amount, String transactionId) throws Exception {
+		AccountEntity accountEntity = getAccountById(username);
+		
 
 		accountEntity.setBalance(accountEntity.getBalance() + amount);
 		accountEntity.removePendingTransaction(transactionId);
 
-		while (true) {
-			try {
-				this.accountsSecondaryDao.save(accountEntity);
-				break;
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println("Error in saving account in Secondary DB, aborting saving and retrying ...");
-			}
+		boolean saveSuccessed = tryToSaveAccountToSecondary(accountEntity);
+		
+		if(!saveSuccessed) {
+			throw new SavingAccountToSecondaryFailedException("Failed to save account to Scondary DB:" + accountEntity.toString());
 		}
 
 		return this.accountsPrimaryDao.save(accountEntity);
@@ -140,28 +119,35 @@ public class JpaAccountsService implements AccountsService {
 
 	@Override
 	@Transactional
-	public Object updatePullFromPendingTransactions(String username, String transactionId) {
-		AccountEntity accountEntity;
-		try {
-			accountEntity = getAccountById(username);
-		} catch (AccountNotFoundException e) {
-			e.printStackTrace();
-			return null;
-		}
+	public Object updatePullFromPendingTransactions(String username, String transactionId) throws Exception{
+		AccountEntity accountEntity = getAccountById(username);
 
 		accountEntity.removePendingTransaction(transactionId);
 
-		while (true) {
-			try {
-				this.accountsSecondaryDao.save(accountEntity);
-				break;
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println("Error in saving account in Secondary DB, aborting saving and retrying ...");
-			}
+		boolean saveSuccessed = tryToSaveAccountToSecondary(accountEntity);
+		
+		if(!saveSuccessed) {
+			throw new SavingAccountToSecondaryFailedException("Failed to save account to Scondary DB:" + accountEntity.toString());
 		}
 
 		return this.accountsPrimaryDao.save(accountEntity);
 	}
-
+	
+	private boolean tryToSaveAccountToSecondary(AccountEntity accountEntity) {
+		int counter = 0;
+		while (true) {
+			try {
+				counter++;
+				this.accountsSecondaryDao.save(accountEntity);
+				return true;
+			} catch (Exception e) {
+				if (counter == NUM_OF_TRYING_TO_SAVE_TO_DB) {
+					System.out.println("Error in saving transaction in Secondary DB: timeout");
+					return false;
+				}
+				e.printStackTrace();
+				System.out.println("Error in saving transaction in Secondary DB, aborting saving and retrying ...");
+			}
+		}
+	}
 }

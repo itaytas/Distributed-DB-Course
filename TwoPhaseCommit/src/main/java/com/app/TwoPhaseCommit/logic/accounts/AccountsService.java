@@ -17,10 +17,10 @@ public interface AccountsService {
 	
 	public boolean isAccountExists(String username);
 	
-	public Object updateBalanceAndPushToPendingTransactions(String username, double amount, String transactionId);
+	public Object updateBalanceAndPushToPendingTransactions(String username, double amount, String transactionId) throws Exception;
 
-    public Object updateBalanceAndPullFromPendingTransactions(String username, double amount, String transactionId);
+    public Object updateBalanceAndPullFromPendingTransactions(String username, double amount, String transactionId) throws Exception;
     
-    public Object updatePullFromPendingTransactions(String username, String transactionId);
+    public Object updatePullFromPendingTransactions(String username, String transactionId) throws Exception;
 
 }

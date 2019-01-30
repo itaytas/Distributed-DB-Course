@@ -1,7 +1,5 @@
 package com.app.TwoPhaseCommit.api;
 
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,26 +9,35 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.app.TwoPhaseCommit.logic.transactions.TransactionService;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionState;
+import com.app.TwoPhaseCommit.logic.transfer.TransferService;
 
 @RestController
-public class TransactionRestController {
+public class TransferTransactionRestController {
 	
 	private TransactionService transactionService;
+	private TransferService transferService;
 	
 	@Autowired
-	public void setTransactionService(TransactionService transactionService) {
+	public TransferTransactionRestController(TransactionService transactionService, TransferService transferService) {
 		this.transactionService = transactionService;
+		this.transferService = transferService;
 	}
 	
 	@RequestMapping(
 			method=RequestMethod.GET,
 			path="/transfer/{source}/{destination}/{value}",
 			produces=MediaType.APPLICATION_JSON_VALUE)
-	public Object getAllAccounts(
+	public TransactionTO transfer(
 			@PathVariable("source") String source,
 			@PathVariable("destination") String destination,
 			@PathVariable("value") String value) throws Exception {	    	
-		return this.transactionService.createNewTransaction(
-				source, destination, Double.parseDouble(value), TransactionState.INITIAL);
+		return new TransactionTO(
+				this.transferService.transfer(
+						this.transactionService.createNewTransaction(
+											source,
+											destination,	
+											Double.parseDouble(value),
+											TransactionState.INITIAL)));
 	}
+
 }

@@ -4,11 +4,11 @@ import com.app.TwoPhaseCommit.logic.transactions.TransactionEntity;
 
 public interface TransferService {
 	
-	public void transfer(TransactionEntity transaction);
+	public TransactionEntity transfer(TransactionEntity transaction) throws Exception;
 	
-	public void recoverPending(TransactionEntity transaction);
+	//public void recoverPending(TransactionEntity transaction);
 	
-	public void recoverApplied(TransactionEntity transaction);
+	//public void recoverApplied(TransactionEntity transaction);
 	
-	public void cancelPending(TransactionEntity transaction);
+	//public void cancelPending(TransactionEntity transaction);
 }
