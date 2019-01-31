@@ -5,7 +5,7 @@ package com.app.TwoPhaseCommit.logic.transactions;
  * INITIAL -> PENDING -> APPLIED -> DONE
  * 
  * Failure Flow:
- * INITIAL -> PENDING -> APPLIED -> CANCELLING -> CANCELLED
+ * INITIAL -> PENDING -> CANCELLING -> CANCELLED
 */
 public enum TransactionState {
 	INITIAL, PENDING, APPLIED, DONE, CANCELING, CANCELED

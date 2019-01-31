@@ -10,14 +10,12 @@ public interface TransactionService {
 			String source,
 			String destination,
 			double value,
-			TransactionState state);
+			TransactionState state) throws Exception;
 
     public TransactionEntity updateStateOfTransaction(
     		String transactionId,
     		TransactionState fromState,
-    		TransactionState toState);
-
-    public TransactionEntity findTransactionByStateAndLastModified(TransactionState state);
+    		TransactionState toState) throws Exception;
 
 	TransactionEntity getTransactionById(String transactionId) throws TransactionNotFoundException;
 }

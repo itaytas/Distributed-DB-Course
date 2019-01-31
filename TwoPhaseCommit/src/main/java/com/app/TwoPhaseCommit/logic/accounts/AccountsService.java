@@ -11,14 +11,16 @@ public interface AccountsService {
 	
 	public List<AccountEntity> getAllAccounts();
 		
-	public Object createNewAccount(AccountEntity accountEntity) throws Exception;
+	public AccountEntity createNewAccount(AccountEntity accountEntity) throws Exception;
 	
 	public AccountEntity getAccountById(String username) throws AccountNotFoundException;
 	
-	public Object updateBalanceAndPushToPendingTransactions(String username, double amount, String transactionId);
+	public boolean isAccountExists(String username);
+	
+	public Object updateBalanceAndPushToPendingTransactions(String username, double amount, String transactionId) throws Exception;
 
-    public Object updateBalanceAndPullFromPendingTransactions(String username, double amount, String transactionId);
+    public Object updateBalanceAndPullFromPendingTransactions(String username, double amount, String transactionId) throws Exception;
     
-    public Object updatePullFromPendingTransactions(String username, String transactionId);
+    public Object updatePullFromPendingTransactions(String username, String transactionId) throws Exception;
 
 }

@@ -25,34 +25,55 @@ public class JpaTransferService implements TransferService {
 	}
 
 	@Override
-	public void transfer(TransactionEntity transaction) {
-		this.transactionService.updateStateOfTransaction(transaction.getId(), TransactionState.INITIAL,
+	public TransactionEntity transfer(TransactionEntity transaction) throws Exception {
+		this.transactionService.updateStateOfTransaction(
+				transaction.getId(),
+				TransactionState.INITIAL,
 				TransactionState.PENDING);
 
-		this.accountsService.updateBalanceAndPushToPendingTransactions(transaction.getSource(), -transaction.getValue(),
+		this.accountsService.updateBalanceAndPushToPendingTransactions(
+				transaction.getSource(),
+				-transaction.getValue(),
 				transaction.getId());
-		this.accountsService.updateBalanceAndPushToPendingTransactions(transaction.getDestination(),
-				transaction.getValue(), transaction.getId());
+		
+		this.accountsService.updateBalanceAndPushToPendingTransactions(
+				transaction.getDestination(),
+				transaction.getValue(),
+				transaction.getId());
 
-		this.transactionService.updateStateOfTransaction(transaction.getId(), TransactionState.PENDING,
+		this.transactionService.updateStateOfTransaction(
+				transaction.getId(),
+				TransactionState.PENDING,
 				TransactionState.APPLIED);
 
 		this.accountsService.updatePullFromPendingTransactions(transaction.getSource(), transaction.getId());
 		this.accountsService.updatePullFromPendingTransactions(transaction.getDestination(), transaction.getId());
 
-		this.transactionService.updateStateOfTransaction(transaction.getId(), TransactionState.APPLIED,
+		this.transactionService.updateStateOfTransaction(
+				transaction.getId(),
+				TransactionState.APPLIED,
 				TransactionState.DONE);
+		
+		return transaction;
 
 	}
-
+	
+/*	// Additional methods for strange situations
 	@Override
 	public void recoverPending(TransactionEntity transaction) {
-		this.accountsService.updateBalanceAndPushToPendingTransactions(transaction.getSource(), -transaction.getValue(),
+		this.accountsService.updateBalanceAndPushToPendingTransactions(
+				transaction.getSource(),
+				-transaction.getValue(),
 				transaction.getId());
-		this.accountsService.updateBalanceAndPushToPendingTransactions(transaction.getDestination(),
-				transaction.getValue(), transaction.getId());
+		
+		this.accountsService.updateBalanceAndPushToPendingTransactions(
+				transaction.getDestination(),
+				transaction.getValue(),
+				transaction.getId());
 
-		this.transactionService.updateStateOfTransaction(transaction.getId(), TransactionState.PENDING,
+		this.transactionService.updateStateOfTransaction(
+				transaction.getId(),
+				TransactionState.PENDING,
 				TransactionState.APPLIED);
 
 		this.accountsService.updatePullFromPendingTransactions(transaction.getSource(), transaction.getId());
@@ -65,9 +86,17 @@ public class JpaTransferService implements TransferService {
 
 	@Override
 	public void recoverApplied(TransactionEntity transaction) {
-		this.accountsService.updatePullFromPendingTransactions(transaction.getSource(), transaction.getId());
-		this.accountsService.updatePullFromPendingTransactions(transaction.getDestination(), transaction.getId());
-		this.transactionService.updateStateOfTransaction(transaction.getId(), TransactionState.APPLIED,
+		this.accountsService.updatePullFromPendingTransactions(
+				transaction.getSource(),
+				transaction.getId());
+		
+		this.accountsService.updatePullFromPendingTransactions(
+				transaction.getDestination(),
+				transaction.getId());
+		
+		this.transactionService.updateStateOfTransaction(
+				transaction.getId(),
+				TransactionState.APPLIED,
 				TransactionState.DONE);
 	}
 
@@ -84,5 +113,5 @@ public class JpaTransferService implements TransferService {
 		this.transactionService.updateStateOfTransaction(transaction.getId(), TransactionState.CANCELING,
 				TransactionState.CANCELED);
 	}
-
+*/
 }
