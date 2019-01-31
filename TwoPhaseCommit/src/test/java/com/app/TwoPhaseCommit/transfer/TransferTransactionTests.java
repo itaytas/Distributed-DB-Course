@@ -1,4 +1,4 @@
-package com.app.TwoPhaseCommit.transactions;
+package com.app.TwoPhaseCommit.transfer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,44 +20,52 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
 import com.app.TwoPhaseCommit.api.AccountTO;
+import com.app.TwoPhaseCommit.api.TransactionTO;
+import com.app.TwoPhaseCommit.dal.primary.AccountsPrimaryDao;
 import com.app.TwoPhaseCommit.dal.primary.TransactionPrimaryDao;
+import com.app.TwoPhaseCommit.dal.secondary.AccountsSecondaryDao;
 import com.app.TwoPhaseCommit.dal.secondary.TransactionSecondaryDao;
 import com.app.TwoPhaseCommit.logic.accounts.AccountEntity;
 import com.app.TwoPhaseCommit.logic.accounts.AccountsService;
-import com.app.TwoPhaseCommit.logic.accounts.exceptions.AccountNotFoundException;
-import com.app.TwoPhaseCommit.logic.transactions.TransactionEntity;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionService;
-import com.app.TwoPhaseCommit.logic.transactions.TransactionState;
-import com.app.TwoPhaseCommit.logic.transactions.exceptions.InvalidMoneyAmountException;
-import com.app.TwoPhaseCommit.logic.transactions.exceptions.SourceAndDestinationAreEqualsException;
+import com.app.TwoPhaseCommit.logic.transfer.TransferService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-public class TransactionsTests {
-	
+public class TransferTransactionTests {
+
 	@LocalServerPort
 	private int port;
 	private String url;
 	private RestTemplate restTemplate;
 	private ObjectMapper jsonMapper;
-	
+
 	@Autowired
 	private AccountsService accountsService;
 	
 	@Autowired
-	private TransactionService transactionService;
+	private AccountsPrimaryDao accountsPrimaryDao;
+
+	@Autowired
+	private AccountsSecondaryDao accountsSecondaryDao;
 	
+	@Autowired
+	private TransferService transferService; 
+	
+	@Autowired
+	private TransactionService transactionService;
+
 	@Autowired
 	private TransactionPrimaryDao transactionPrimaryDao;
-	
+
 	@Autowired
 	private TransactionSecondaryDao transactionSecondaryDao;
-	
+
 	private AccountEntity account1;
 	private AccountEntity account2;
 	private AccountEntity account3;
-	
+
 	@PostConstruct
 	public void init() {
 		this.restTemplate = new RestTemplate();
@@ -73,7 +81,7 @@ public class TransactionsTests {
 		AccountTO accountTO1 = new AccountTO("username1", 1000.0, null);
 		AccountTO accountTO2 = new AccountTO("username2", 1100.0, null);
 		AccountTO accountTO3 = new AccountTO("username3", 1200.0, null);
-				
+
 		this.account1 = this.accountsService.createNewAccount(accountTO1.toEntity());
 		this.account2 = this.accountsService.createNewAccount(accountTO2.toEntity());
 		this.account3 = this.accountsService.createNewAccount(accountTO3.toEntity());
@@ -94,67 +102,35 @@ public class TransactionsTests {
 	}
 	
 	@Test
-	public void testCreateTransactionSuccessfully() throws Exception {
-		TransactionEntity expectedTransaction = 
-				this.transactionService.createNewTransaction(
+	public void testTransferMoneysuccessfully() throws Exception {
+		// Before: account1.balance = 1000.0, account2.balance = 1100.0
+		TransactionTO expectedTransaction = 
+				this.restTemplate.getForObject(
+						this.url,
+						TransactionTO.class,
 						this.account1.getUsername(),
 						this.account2.getUsername(),
-						100, TransactionState.INITIAL);
+						100);
 		
 		
-		Optional<TransactionEntity> opPrimary = this.transactionPrimaryDao.findById(expectedTransaction.getId());
-		Optional<TransactionEntity> opSecondary = this.transactionSecondaryDao.findById(expectedTransaction.getId());
-				
-		assertThat(opPrimary.get())
-		.isNotNull()
-		.isEqualTo(opSecondary.get())
-		.isEqualTo(expectedTransaction);
+		
+		// After: account1.balance = 900.0, account2.balance = 1200.0
+		assertThat(this.accountsPrimaryDao.findById(this.account1.getUsername()).get().getBalance())
+		.isEqualTo(900.0)
+		.isEqualTo(this.accountsSecondaryDao.findById(this.account1.getUsername()).get().getBalance());
+		
+		assertThat(this.accountsPrimaryDao.findById(this.account2.getUsername()).get().getBalance())
+		.isEqualTo(1200.0)
+		.isEqualTo(this.accountsSecondaryDao.findById(this.account2.getUsername()).get().getBalance());
+		
+		assertThat(this.accountsPrimaryDao.findById(this.account1.getUsername()).get().getPendingTransactions())
+		.isEqualTo(this.accountsSecondaryDao.findById(this.account1.getUsername()).get().getPendingTransactions())
+		.isEmpty();
+		
+		assertThat(this.accountsPrimaryDao.findById(this.account2.getUsername()).get().getPendingTransactions())
+		.isEqualTo(this.accountsSecondaryDao.findById(this.account2.getUsername()).get().getPendingTransactions())
+		.isEmpty();
 		
 	}
-	
-	@Test
-	public void testCreateTransactionWithNegativeMoneyValue() throws Exception {
-		this.exception.expect(InvalidMoneyAmountException.class);
-		
-		TransactionEntity expectedTransaction = 
-				this.transactionService.createNewTransaction(
-						this.account1.getUsername(),
-						this.account2.getUsername(),
-						-100, TransactionState.INITIAL);
-	}
-	
-	@Test
-	public void testCreateTransactionWithUnknownSource() throws Exception {
-		this.exception.expect(AccountNotFoundException.class);
-		
-		TransactionEntity expectedTransaction = 
-				this.transactionService.createNewTransaction(
-						"UnknownSourceUsername",
-						this.account2.getUsername(),
-						100, TransactionState.INITIAL);
-	}
-	
-	@Test
-	public void testCreateTransactionWithUnknownDestination() throws Exception {
-		this.exception.expect(AccountNotFoundException.class);
-		
-		TransactionEntity expectedTransaction = 
-				this.transactionService.createNewTransaction(
-						this.account1.getUsername(),
-						"UnknownDestinationUsername",
-						100, TransactionState.INITIAL);
-	}
-	
-	@Test
-	public void testCreateTransactionWithSameSourceAndDestination() throws Exception {
-		this.exception.expect(SourceAndDestinationAreEqualsException.class);
-		
-		TransactionEntity expectedTransaction = 
-				this.transactionService.createNewTransaction(
-						this.account1.getUsername(),
-						this.account1.getUsername(),
-						100, TransactionState.INITIAL);
-	}
-	
 	
 }

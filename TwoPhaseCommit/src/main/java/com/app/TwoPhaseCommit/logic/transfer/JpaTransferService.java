@@ -3,6 +3,7 @@ package com.app.TwoPhaseCommit.logic.transfer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.app.TwoPhaseCommit.aop.MyLog;
 import com.app.TwoPhaseCommit.logic.accounts.AccountsService;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionEntity;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionService;
@@ -24,6 +25,7 @@ public class JpaTransferService implements TransferService {
 		this.accountsService = accountsService;
 	}
 
+	@MyLog
 	@Override
 	public TransactionEntity transfer(TransactionEntity transaction) throws Exception {
 		this.transactionService.updateStateOfTransaction(

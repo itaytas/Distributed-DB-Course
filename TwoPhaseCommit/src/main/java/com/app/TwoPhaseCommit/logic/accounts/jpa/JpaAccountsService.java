@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.app.TwoPhaseCommit.aop.MyLog;
 import com.app.TwoPhaseCommit.dal.primary.AccountsPrimaryDao;
 import com.app.TwoPhaseCommit.dal.secondary.AccountsSecondaryDao;
 import com.app.TwoPhaseCommit.logic.accounts.AccountEntity;
@@ -32,6 +33,7 @@ public class JpaAccountsService implements AccountsService {
 		this.accountsSecondaryDao = accountsSecondaryDao;
 	}
 
+	@MyLog
 	@Override
 	@Transactional
 	public void cleanup() {
@@ -39,6 +41,7 @@ public class JpaAccountsService implements AccountsService {
 		this.accountsSecondaryDao.deleteAll();
 	}
 
+	@MyLog
 	@Override
 	@Transactional(readOnly = true)
 	public List<AccountEntity> getAllAccounts() {
@@ -47,6 +50,7 @@ public class JpaAccountsService implements AccountsService {
 		return allList;
 	}
 
+	@MyLog
 	@Override
 	@Transactional
 	public AccountEntity createNewAccount(AccountEntity accountEntity) throws Exception {
@@ -64,6 +68,7 @@ public class JpaAccountsService implements AccountsService {
 		}
 	}
 
+	@MyLog
 	@Override
 	@Transactional(readOnly = true)
 	public AccountEntity getAccountById(String username) throws AccountNotFoundException {
@@ -75,18 +80,19 @@ public class JpaAccountsService implements AccountsService {
 		return op.get();
 	}
 	
+	@MyLog
 	@Override
 	public boolean isAccountExists(String username) {
 		Optional<AccountEntity> op = this.accountsPrimaryDao.findById(username);
 		return op.isPresent();
 	}
 
+	@MyLog
 	@Override
 	@Transactional
 	public Object updateBalanceAndPushToPendingTransactions(String username, double amount, String transactionId) throws Exception {
 		AccountEntity accountEntity= getAccountById(username);
 		
-
 		accountEntity.setBalance(accountEntity.getBalance() + amount);
 		accountEntity.addToPendingTransactions(transactionId);
 
@@ -99,6 +105,7 @@ public class JpaAccountsService implements AccountsService {
 		return this.accountsPrimaryDao.save(accountEntity);
 	}
 
+	@MyLog
 	@Override
 	@Transactional
 	public Object updateBalanceAndPullFromPendingTransactions(String username, double amount, String transactionId) throws Exception {
@@ -117,6 +124,7 @@ public class JpaAccountsService implements AccountsService {
 		return this.accountsPrimaryDao.save(accountEntity);
 	}
 
+	@MyLog
 	@Override
 	@Transactional
 	public Object updatePullFromPendingTransactions(String username, String transactionId) throws Exception{
@@ -133,6 +141,7 @@ public class JpaAccountsService implements AccountsService {
 		return this.accountsPrimaryDao.save(accountEntity);
 	}
 	
+	@MyLog
 	private boolean tryToSaveAccountToSecondary(AccountEntity accountEntity) {
 		int counter = 0;
 		while (true) {
