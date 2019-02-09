@@ -6,15 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.app.TwoPhaseCommit.aop.MyLog;
 import com.app.TwoPhaseCommit.dal.primary.TransactionPrimaryDao;
 import com.app.TwoPhaseCommit.dal.secondary.TransactionSecondaryDao;
 import com.app.TwoPhaseCommit.logic.accounts.AccountsService;
 import com.app.TwoPhaseCommit.logic.accounts.exceptions.AccountNotFoundException;
-import com.app.TwoPhaseCommit.logic.transaction.exceptionss.jpa.InvalidMoneyAmountException;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionEntity;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionService;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionState;
+import com.app.TwoPhaseCommit.logic.transactions.exceptions.InvalidMoneyAmountException;
 import com.app.TwoPhaseCommit.logic.transactions.exceptions.SavingTransactionToSecondaryFailedException;
+import com.app.TwoPhaseCommit.logic.transactions.exceptions.SourceAndDestinationAreEqualsException;
 import com.app.TwoPhaseCommit.logic.transactions.exceptions.TransactionNotFoundException;
 
 @Service
@@ -35,6 +37,7 @@ public class JpaTransactionService implements TransactionService {
 		this.accountsService = accountsService;
 	}
 
+	@MyLog
 	@Override
 	@Transactional
 	public void cleanup() {
@@ -42,6 +45,7 @@ public class JpaTransactionService implements TransactionService {
 		this.transactionSecondaryDao.deleteAll();
 	}
 
+	@MyLog
 	@Override
 	@Transactional
 	public TransactionEntity createNewTransaction(
@@ -56,6 +60,10 @@ public class JpaTransactionService implements TransactionService {
 		
 		if (!this.accountsService.isAccountExists(destination)) {
 			throw new AccountNotFoundException("There is no Account with username: " + destination);
+		}
+		
+		if (source.equals(destination)) {
+			throw new SourceAndDestinationAreEqualsException("Source and destination can't be the same account");
 		}
 		
 		if (value < 0) {
@@ -74,6 +82,7 @@ public class JpaTransactionService implements TransactionService {
 		return this.transactionPrimaryDao.save(transactionEntity);
 	}
 	
+	@MyLog
 	@Override
 	@Transactional(readOnly = true)
 	public TransactionEntity getTransactionById(String transactionId) throws TransactionNotFoundException {
@@ -84,6 +93,7 @@ public class JpaTransactionService implements TransactionService {
 		return (TransactionEntity) transactions.toArray()[0];
 	}
 		
+	@MyLog
 	@Override
 	@Transactional
 	public TransactionEntity updateStateOfTransaction(String transactionId, TransactionState fromState, TransactionState toState) throws Exception {
@@ -100,6 +110,7 @@ public class JpaTransactionService implements TransactionService {
 		return this.transactionPrimaryDao.save(transactionEntity);
 	}
 	
+	@MyLog
 	private boolean tryToSaveTransactionToSecondary(TransactionEntity transactionEntity) {
 		int counter = 0;
 		while (true) {

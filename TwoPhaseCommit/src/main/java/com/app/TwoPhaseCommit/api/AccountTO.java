@@ -16,7 +16,13 @@ public class AccountTO {
 	public AccountTO(String username, double balance, ArrayList<Object> pendingTransactions) {
 		this.username = username;
 		this.balance = balance;
-		this.pendingTransactions = pendingTransactions;
+		if (pendingTransactions != null) {
+			this.pendingTransactions = pendingTransactions;
+		}
+		else {
+			this.pendingTransactions = new ArrayList<Object>();
+		}
+		
 	}
 
 	public AccountTO(AccountEntity entity) {
