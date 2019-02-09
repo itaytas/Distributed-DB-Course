@@ -10,6 +10,8 @@ public interface AccountsService {
 	public void cleanup();
 	
 	public List<AccountEntity> getAllAccounts();
+	
+	public List<AccountEntity> getCommunity(String username);
 		
 	public AccountEntity createNewAccount(AccountEntity accountEntity) throws Exception;
 	

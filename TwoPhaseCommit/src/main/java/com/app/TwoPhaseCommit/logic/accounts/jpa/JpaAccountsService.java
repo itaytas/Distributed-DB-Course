@@ -16,8 +16,6 @@ import com.app.TwoPhaseCommit.logic.accounts.AccountsService;
 import com.app.TwoPhaseCommit.logic.accounts.exceptions.AccountAlreadyExistsException;
 import com.app.TwoPhaseCommit.logic.accounts.exceptions.AccountNotFoundException;
 import com.app.TwoPhaseCommit.logic.accounts.exceptions.SavingAccountToSecondaryFailedException;
-import com.app.TwoPhaseCommit.logic.transactions.TransactionEntity;
-import com.app.TwoPhaseCommit.logic.transactions.exceptions.SavingTransactionToSecondaryFailedException;
 
 @Service
 public class JpaAccountsService implements AccountsService {
@@ -50,6 +48,17 @@ public class JpaAccountsService implements AccountsService {
 		return allList;
 	}
 
+	@Override
+	public List<AccountEntity> getCommunity(String username) {
+		List<AccountEntity> communityList = new ArrayList<>();
+		this.accountsPrimaryDao.findAll().forEach( (o) -> {
+			if (!o.getUsername().equals(username)) {
+				communityList.add(o);
+			}
+		});
+		return communityList;
+}
+	
 	@MyLog
 	@Override
 	@Transactional

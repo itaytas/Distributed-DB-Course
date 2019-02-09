@@ -29,7 +29,6 @@ import com.app.TwoPhaseCommit.logic.transactions.TransactionEntity;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionService;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionState;
 import com.app.TwoPhaseCommit.logic.transactions.exceptions.InvalidMoneyAmountException;
-import com.app.TwoPhaseCommit.logic.transactions.exceptions.SourceAndDestinationAreEqualsException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringRunner.class)
@@ -109,7 +108,6 @@ public class TransactionsTests {
 		.isNotNull()
 		.isEqualTo(opSecondary.get())
 		.isEqualTo(expectedTransaction);
-		
 	}
 	
 	@Test
@@ -124,37 +122,25 @@ public class TransactionsTests {
 	}
 	
 	@Test
-	public void testCreateTransactionWithUnknownSource() throws Exception {
+	public void testCreateTransactionFromUnknownSource() throws Exception {
 		this.exception.expect(AccountNotFoundException.class);
 		
 		TransactionEntity expectedTransaction = 
 				this.transactionService.createNewTransaction(
 						"UnknownSourceUsername",
 						this.account2.getUsername(),
-						100, TransactionState.INITIAL);
+						-100, TransactionState.INITIAL);
 	}
 	
 	@Test
-	public void testCreateTransactionWithUnknownDestination() throws Exception {
+	public void testCreateTransactionToUnknownDestination() throws Exception {
 		this.exception.expect(AccountNotFoundException.class);
 		
 		TransactionEntity expectedTransaction = 
 				this.transactionService.createNewTransaction(
-						this.account1.getUsername(),
 						"UnknownDestinationUsername",
-						100, TransactionState.INITIAL);
+						this.account2.getUsername(),
+						-100, TransactionState.INITIAL);
 	}
-	
-	@Test
-	public void testCreateTransactionWithSameSourceAndDestination() throws Exception {
-		this.exception.expect(SourceAndDestinationAreEqualsException.class);
-		
-		TransactionEntity expectedTransaction = 
-				this.transactionService.createNewTransaction(
-						this.account1.getUsername(),
-						this.account1.getUsername(),
-						100, TransactionState.INITIAL);
-	}
-	
 	
 }
