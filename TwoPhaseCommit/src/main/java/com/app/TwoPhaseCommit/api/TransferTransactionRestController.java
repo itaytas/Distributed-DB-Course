@@ -12,6 +12,7 @@ import com.app.TwoPhaseCommit.logic.transactions.TransactionState;
 import com.app.TwoPhaseCommit.logic.transfer.TransferService;
 
 @RestController
+@RequestMapping("/api/transfer")
 public class TransferTransactionRestController {
 	
 	private TransactionService transactionService;
@@ -25,7 +26,7 @@ public class TransferTransactionRestController {
 	
 	@RequestMapping(
 			method=RequestMethod.GET,
-			path="/transfer/{source}/{destination}/{value}",
+			path="/{source}/{destination}/{value}",
 			produces=MediaType.APPLICATION_JSON_VALUE)
 	public TransactionTO transfer(
 			@PathVariable("source") String source,

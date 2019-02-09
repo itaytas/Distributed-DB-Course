@@ -62,7 +62,7 @@ public class TransactionsTests {
 		this.restTemplate = new RestTemplate();
 		this.jsonMapper = new ObjectMapper();
 
-		this.url = "http://localhost:" + port + "/transfer/{source}/{destination}/{value}";
+		this.url = "http://localhost:" + port + "/api/transfer/{source}/{destination}/{value}";
 		System.err.println(this.url);
 	}
 
