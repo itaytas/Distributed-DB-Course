@@ -1,8 +1,8 @@
-package com.app.TwoPhaseCommit.transfer;
+package com.app.TwoPhaseCommit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Optional;
+import java.util.Arrays;
 
 import javax.annotation.PostConstruct;
 
@@ -17,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.app.TwoPhaseCommit.api.AccountTO;
@@ -34,8 +33,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-public class TransferTransactionTests {
-
+public class ApplicationTests {
+	
+	private final String CREATE_NEW_USER = "/api/account/new";
+	private final String LOGIN = "/api/account/login/{username}";
+	private final String GET_COMMUNITY = "/api/account/community/{username}";
+	private final String WHO_AM_I = "/api/account/details/{username}";
+	private final String TRANSFER_MONEY = "/api/transfer/{source}/{destination}/{value}";
+	
 	@LocalServerPort
 	private int port;
 	private String url;
@@ -63,6 +68,10 @@ public class TransferTransactionTests {
 	@Autowired
 	private TransactionSecondaryDao transactionSecondaryDao;
 
+	private AccountTO accountTO1;
+	private AccountTO accountTO2;
+	private AccountTO accountTO3;
+	
 	private AccountEntity account1;
 	private AccountEntity account2;
 	private AccountEntity account3;
@@ -72,16 +81,16 @@ public class TransferTransactionTests {
 		this.restTemplate = new RestTemplate();
 		this.jsonMapper = new ObjectMapper();
 
-		this.url = "http://localhost:" + port + "/api/transfer/{source}/{destination}/{value}";
+		this.url = "http://localhost:" + port;
 		System.err.println(this.url);
 	}
 
 	@Before
 	public void setup() throws Exception {
 		// creating 3 Accounts
-		AccountTO accountTO1 = new AccountTO("username1", 1000.0, null);
-		AccountTO accountTO2 = new AccountTO("username2", 1100.0, null);
-		AccountTO accountTO3 = new AccountTO("username3", 1200.0, null);
+		this.accountTO1 = new AccountTO("username1", 1000.0, null);
+		this.accountTO2 = new AccountTO("username2", 1100.0, null);
+		this.accountTO3 = new AccountTO("username3", 1200.0, null);
 
 		this.account1 = this.accountsService.createNewAccount(accountTO1.toEntity());
 		this.account2 = this.accountsService.createNewAccount(accountTO2.toEntity());
@@ -91,8 +100,8 @@ public class TransferTransactionTests {
 
 	@After
 	public void teardown() {
-		this.accountsService.cleanup();
-		this.transactionService.cleanup();
+//		this.accountsService.cleanup();
+//		this.transactionService.cleanup();
 	}
 
 	@Rule
@@ -103,88 +112,60 @@ public class TransferTransactionTests {
 	}
 	
 	@Test
-	public void testTransferMoneysuccessfully() throws Exception {
-		// Before: account1.balance = 1000.0, account2.balance = 1100.0
+	public void testSuccessfullSenario() throws Exception {
+		/**
+		 * 1) Create an account 
+		 * 2) Login with the account we've just created
+		 * 3) Check to who we can transfer money
+		 * 4) Choose one account to transfer money
+		 * 5) Check our balance
+		 */
+		
+		AccountTO itayTO = new AccountTO("Itay", 1000.0, null);
+		AccountTO actualItayThatCreated = 
+				this.restTemplate.postForObject(this.url + CREATE_NEW_USER, itayTO, AccountTO.class);
+		AccountTO actualItayLogin = 
+				this.restTemplate.getForObject(this.url + LOGIN, AccountTO.class, itayTO.getUsername());
+
+		assertThat(actualItayThatCreated)
+		.isEqualTo(itayTO)
+		.isEqualTo(actualItayLogin);
+		
+		AccountTO[] accountsList = 
+				this.restTemplate.getForObject(this.url + GET_COMMUNITY, AccountTO[].class, itayTO.getUsername());
+
+
+		assertThat(accountsList).doesNotContain(itayTO);
+		assertThat(accountsList).contains(this.accountTO1, this.accountTO2, this.accountTO3);
+
 		TransactionTO expectedTransaction = 
 				this.restTemplate.getForObject(
-						this.url,
+						this.url + TRANSFER_MONEY,
 						TransactionTO.class,
+						itayTO.getUsername(),
 						this.account1.getUsername(),
-						this.account2.getUsername(),
 						100);
 		
-		// After: account1.balance = 900.0, account2.balance = 1200.0
-		assertThat(this.accountsPrimaryDao.findById(this.account1.getUsername()).get().getBalance())
+		assertThat(this.accountsPrimaryDao.findById(itayTO.getUsername()).get().getBalance())
 		.isEqualTo(900.0)
+		.isEqualTo(this.accountsSecondaryDao.findById(itayTO.getUsername()).get().getBalance());
+		
+		assertThat(this.accountsPrimaryDao.findById(this.account1.getUsername()).get().getBalance())
+		.isEqualTo(1100.0)
 		.isEqualTo(this.accountsSecondaryDao.findById(this.account1.getUsername()).get().getBalance());
 		
-		assertThat(this.accountsPrimaryDao.findById(this.account2.getUsername()).get().getBalance())
-		.isEqualTo(1200.0)
-		.isEqualTo(this.accountsSecondaryDao.findById(this.account2.getUsername()).get().getBalance());
+		assertThat(this.accountsPrimaryDao.findById(itayTO.getUsername()).get().getPendingTransactions())
+		.isEqualTo(this.accountsSecondaryDao.findById(itayTO.getUsername()).get().getPendingTransactions())
+		.isEmpty();
 		
 		assertThat(this.accountsPrimaryDao.findById(this.account1.getUsername()).get().getPendingTransactions())
 		.isEqualTo(this.accountsSecondaryDao.findById(this.account1.getUsername()).get().getPendingTransactions())
 		.isEmpty();
 		
-		assertThat(this.accountsPrimaryDao.findById(this.account2.getUsername()).get().getPendingTransactions())
-		.isEqualTo(this.accountsSecondaryDao.findById(this.account2.getUsername()).get().getPendingTransactions())
-		.isEmpty();
+		AccountTO actualItayWhoAmI = 
+				this.restTemplate.getForObject(this.url + WHO_AM_I, AccountTO.class, itayTO.getUsername());
 		
-	}
-	
-	@Test
-	public void testTransferNegativeAmountOfMoney() throws Exception {
-		this.exception.expect(HttpServerErrorException.class);
-		
-		TransactionTO expectedTransaction = 
-				this.restTemplate.getForObject(
-						this.url,
-						TransactionTO.class,
-						this.account1.getUsername(),
-						this.account2.getUsername(),
-						-100);
-		
-	}
-	
-	@Test
-	public void testTransferMoneyToHimself() throws Exception {
-		this.exception.expect(HttpServerErrorException.class);
-		
-		TransactionTO expectedTransaction = 
-				this.restTemplate.getForObject(
-						this.url,
-						TransactionTO.class,
-						this.account1.getUsername(),
-						this.account1.getUsername(),
-						100);
-		
-	}
-	
-	@Test
-	public void testTransferMoneyFromUnknownSource() throws Exception {
-		this.exception.expect(HttpServerErrorException.class);
-		
-		TransactionTO expectedTransaction = 
-				this.restTemplate.getForObject(
-						this.url,
-						TransactionTO.class,
-						"UnknownSource",
-						this.account2.getUsername(),
-						100);
-		
-	}
-	
-	@Test
-	public void testTransferMoneyToUnknownDestination() throws Exception {
-		this.exception.expect(HttpServerErrorException.class);
-		
-		TransactionTO expectedTransaction = 
-				this.restTemplate.getForObject(
-						this.url,
-						TransactionTO.class,
-						this.account1.getUsername(),
-						"UnknownDestination",
-						100);
+		System.err.println(expectedTransaction.toString());
 		
 	}
 	
