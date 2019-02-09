@@ -100,8 +100,8 @@ public class ApplicationTests {
 
 	@After
 	public void teardown() {
-//		this.accountsService.cleanup();
-//		this.transactionService.cleanup();
+		this.accountsService.cleanup();
+		this.transactionService.cleanup();
 	}
 
 	@Rule
