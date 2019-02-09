@@ -48,8 +48,16 @@ public class AccountsRestConroller {
 		return this.accountsService.getCommunity(username)
 													.stream()
 													.map(AccountTO::new)
-													.collect(Collectors.toList())
+													.collect(Collectors.toList())												
 													.toArray(new AccountTO[0]);
+	}
+	
+	@RequestMapping(
+			method=RequestMethod.GET,
+			path="/details/{username}",
+			produces=MediaType.APPLICATION_JSON_VALUE)
+	public AccountTO whoAmI(@PathVariable String username) throws Exception {	    	
+		return new AccountTO(this.accountsService.getAccountById(username));
 	}
 	
 }

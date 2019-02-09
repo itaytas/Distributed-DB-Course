@@ -56,7 +56,7 @@ public class JpaTransferService implements TransferService {
 				TransactionState.APPLIED,
 				TransactionState.DONE);
 		
-		return transaction;
+		return this.transactionService.getTransactionById(transaction.getId());
 
 	}
 	

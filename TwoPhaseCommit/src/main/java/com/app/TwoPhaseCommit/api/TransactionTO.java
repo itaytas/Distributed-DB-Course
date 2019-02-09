@@ -23,7 +23,11 @@ public class TransactionTO {
 	}
 
 	public TransactionTO(TransactionEntity entity) {
-		this(entity.getSource(), entity.getDestination(), entity.getValue(), entity.getState(),
+		this(
+				entity.getSource(),
+				entity.getDestination(),
+				entity.getValue(),
+				entity.getState(),
 				entity.getLastModified());
 	}
 
