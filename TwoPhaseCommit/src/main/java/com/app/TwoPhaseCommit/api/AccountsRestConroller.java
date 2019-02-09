@@ -4,6 +4,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.app.TwoPhaseCommit.logic.accounts.AccountsService;
 
 @RestController
+@RequestMapping("/api/account")
 public class AccountsRestConroller {
 	
 	private AccountsService accountsService;
@@ -23,7 +25,7 @@ public class AccountsRestConroller {
 	
 	@RequestMapping(
 			method=RequestMethod.POST,
-			path="/accounts",
+			path="/new",
 			produces=MediaType.APPLICATION_JSON_VALUE,
 			consumes=MediaType.APPLICATION_JSON_VALUE)
 	public AccountTO createNewAccount(@RequestBody AccountTO newAccountTO) throws Exception {	    	
@@ -32,10 +34,22 @@ public class AccountsRestConroller {
 	
 	@RequestMapping(
 			method=RequestMethod.GET,
-			path="/accounts",
+			path="/login/{username}",
 			produces=MediaType.APPLICATION_JSON_VALUE)
-	public AccountTO[] getAllAccounts() throws Exception {	    	
-		return this.accountsService.getAllAccounts().stream().map(AccountTO::new).collect(Collectors.toList()).toArray(new AccountTO[0]);
+	public AccountTO login(@PathVariable String username) throws Exception {	    	
+		return new AccountTO(this.accountsService.getAccountById(username));
+	}
+	
+	@RequestMapping(
+			method=RequestMethod.GET,
+			path="/community/{username}",
+			produces=MediaType.APPLICATION_JSON_VALUE)
+	public AccountTO[] getCommunity(@PathVariable String username) throws Exception {	    	
+		return this.accountsService.getCommunity(username)
+													.stream()
+													.map(AccountTO::new)
+													.collect(Collectors.toList())
+													.toArray(new AccountTO[0]);
 	}
 	
 }

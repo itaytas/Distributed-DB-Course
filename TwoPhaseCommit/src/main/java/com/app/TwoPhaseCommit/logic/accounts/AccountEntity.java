@@ -1,9 +1,7 @@
 package com.app.TwoPhaseCommit.logic.accounts;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
-//import javax.persistence.Id;
 import org.springframework.data.annotation.Id;
 
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -23,7 +21,7 @@ public class AccountEntity {
 		this.balance = balance;
 		this.pendingTransactions = pendingTransactions;
 	}
-	
+
 	@Id
 	public String getUsername() {
 		return username;
@@ -48,11 +46,11 @@ public class AccountEntity {
 	public void setPendingTransactions(ArrayList<Object> pendingTransactions) {
 		this.pendingTransactions = pendingTransactions;
 	}
-	
+
 	public void addToPendingTransactions(Object pendingTransaction) {
 		this.pendingTransactions.add(pendingTransaction);
 	}
-	
+
 	public void removePendingTransaction(Object pendingTransaction) {
 		if (this.pendingTransactions.contains(pendingTransaction)) {
 			this.pendingTransactions.remove(pendingTransaction);

@@ -1,4 +1,4 @@
-package com.app.TwoPhaseCommit.logic.transaction.exceptionss.jpa;
+package com.app.TwoPhaseCommit.logic.transactions.exceptions;
 
 public class InvalidMoneyAmountException extends Exception {
 

@@ -10,10 +10,10 @@ import com.app.TwoPhaseCommit.dal.primary.TransactionPrimaryDao;
 import com.app.TwoPhaseCommit.dal.secondary.TransactionSecondaryDao;
 import com.app.TwoPhaseCommit.logic.accounts.AccountsService;
 import com.app.TwoPhaseCommit.logic.accounts.exceptions.AccountNotFoundException;
-import com.app.TwoPhaseCommit.logic.transaction.exceptionss.jpa.InvalidMoneyAmountException;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionEntity;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionService;
 import com.app.TwoPhaseCommit.logic.transactions.TransactionState;
+import com.app.TwoPhaseCommit.logic.transactions.exceptions.InvalidMoneyAmountException;
 import com.app.TwoPhaseCommit.logic.transactions.exceptions.SavingTransactionToSecondaryFailedException;
 import com.app.TwoPhaseCommit.logic.transactions.exceptions.TransactionNotFoundException;
 
